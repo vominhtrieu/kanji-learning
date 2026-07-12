@@ -8,6 +8,7 @@ const n5Cards = [
   { kanji: "\u4eba", hanViet: "Nh\u00e2n", meaning: "ng\u01b0\u1eddi" },
   { kanji: "\u5e74", hanViet: "Ni\u00ean", meaning: "n\u0103m" },
   { kanji: "\u5927", hanViet: "\u0110\u1ea1i", meaning: "to, l\u1edbn" },
+  { kanji: "安", hanViet: "An/Yên", meaning: "yên, rẻ, an toàn" },
   { kanji: "\u5341", hanViet: "Th\u1eadp", meaning: "m\u01b0\u1eddi" },
   { kanji: "\u4e8c", hanViet: "Nh\u1ecb", meaning: "hai" },
   { kanji: "\u672c", hanViet: "B\u1ea3n", meaning: "s\u00e1ch, g\u1ed1c" },
@@ -18,6 +19,7 @@ const n5Cards = [
   { kanji: "\u6642", hanViet: "Th\u1eddi", meaning: "th\u1eddi gian, gi\u1edd" },
   { kanji: "\u884c", hanViet: "H\u00e0nh", meaning: "\u0111i, h\u00e0ng/d\u00f2ng" },
   { kanji: "\u898b", hanViet: "Ki\u1ebfn", meaning: "nh\u00ecn, xem" },
+  { kanji: "言", hanViet: "Ngôn", meaning: "nói, lời" },
   { kanji: "\u6708", hanViet: "Nguy\u1ec7t", meaning: "th\u00e1ng, m\u1eb7t tr\u0103ng" },
   { kanji: "\u5206", hanViet: "Ph\u00e2n", meaning: "ph\u1ea7n, ph\u00fat" },
   { kanji: "\u5f8c", hanViet: "H\u1eadu", meaning: "sau" },
@@ -34,6 +36,7 @@ const n5Cards = [
   { kanji: "\u5165", hanViet: "Nh\u1eadp", meaning: "v\u00e0o" },
   { kanji: "\u5b66", hanViet: "H\u1ecdc", meaning: "h\u1ecdc" },
   { kanji: "\u9ad8", hanViet: "Cao", meaning: "cao, \u0111\u1eaft" },
+  { kanji: "会", hanViet: "Hội", meaning: "gặp, hội họp" },
   { kanji: "\u5186", hanViet: "Vi\u00ean", meaning: "y\u00ean, tr\u00f2n" },
   { kanji: "\u5b50", hanViet: "T\u1eed", meaning: "con, tr\u1ebb em" },
   { kanji: "\u5916", hanViet: "Ngo\u1ea1i", meaning: "b\u00ean ngo\u00e0i" },
@@ -50,9 +53,11 @@ const n5Cards = [
   { kanji: "\u5317", hanViet: "B\u1eafc", meaning: "ph\u00eda b\u1eafc" },
   { kanji: "\u5348", hanViet: "Ng\u1ecd", meaning: "bu\u1ed5i tr\u01b0a" },
   { kanji: "\u767e", hanViet: "B\u00e1ch", meaning: "m\u1ed9t tr\u0103m" },
+  { kanji: "口", hanViet: "Khẩu", meaning: "miệng" },
   { kanji: "\u66f8", hanViet: "Th\u01b0", meaning: "vi\u1ebft" },
   { kanji: "\u5148", hanViet: "Ti\u00ean", meaning: "tr\u01b0\u1edbc, ph\u00eda tr\u01b0\u1edbc" },
   { kanji: "\u540d", hanViet: "Danh", meaning: "t\u00ean" },
+  { kanji: "耳", hanViet: "Nhĩ", meaning: "tai" },
   { kanji: "\u5ddd", hanViet: "Xuy\u00ean", meaning: "s\u00f4ng" },
   { kanji: "\u5343", hanViet: "Thi\u00ean", meaning: "m\u1ed9t ngh\u00ecn" },
   { kanji: "\u6c34", hanViet: "Th\u1ee7y", meaning: "n\u01b0\u1edbc" },
@@ -76,12 +81,30 @@ const n5Cards = [
   { kanji: "\u6bcd", hanViet: "M\u1eabu", meaning: "m\u1eb9" },
   { kanji: "\u706b", hanViet: "H\u1ecfa", meaning: "l\u1eeda, th\u1ee9 ba" },
   { kanji: "\u53f3", hanViet: "H\u1eefu", meaning: "b\u00ean ph\u1ea3i" },
+  { kanji: "飲", hanViet: "Ẩm", meaning: "uống" },
   { kanji: "\u8aad", hanViet: "\u0110\u1ed9c", meaning: "\u0111\u1ecdc" },
   { kanji: "\u53cb", hanViet: "H\u1eefu", meaning: "b\u1ea1n" },
   { kanji: "\u5de6", hanViet: "T\u1ea3", meaning: "b\u00ean tr\u00e1i" },
   { kanji: "\u4f11", hanViet: "H\u01b0u", meaning: "ngh\u1ec9" },
   { kanji: "\u7236", hanViet: "Ph\u1ee5", meaning: "b\u1ed1" },
   { kanji: "\u96e8", hanViet: "V\u0169", meaning: "m\u01b0a" },
+  { kanji: "駅", hanViet: "Dịch", meaning: "nhà ga" },
+  { kanji: "花", hanViet: "Hoa", meaning: "hoa" },
+  { kanji: "魚", hanViet: "Ngư", meaning: "cá" },
+  { kanji: "空", hanViet: "Không", meaning: "trống, bầu trời" },
+  { kanji: "古", hanViet: "Cổ", meaning: "cũ" },
+  { kanji: "社", hanViet: "Xã", meaning: "công ty, đền thờ" },
+  { kanji: "手", hanViet: "Thủ", meaning: "tay" },
+  { kanji: "週", hanViet: "Chu", meaning: "tuần" },
+  { kanji: "新", hanViet: "Tân", meaning: "mới" },
+  { kanji: "少", hanViet: "Thiểu", meaning: "ít" },
+  { kanji: "足", hanViet: "Túc", meaning: "chân, đủ" },
+  { kanji: "多", hanViet: "Đa", meaning: "nhiều" },
+  { kanji: "店", hanViet: "Điếm", meaning: "cửa hàng" },
+  { kanji: "道", hanViet: "Đạo", meaning: "đường, đạo" },
+  { kanji: "買", hanViet: "Mãi", meaning: "mua" },
+  { kanji: "目", hanViet: "Mục", meaning: "mắt, mục" },
+  { kanji: "立", hanViet: "Lập", meaning: "đứng, dựng lên" },
 ];
 
 const n4Cards = [
@@ -252,16 +275,60 @@ const n4Cards = [
   { kanji: "妹", hanViet: "Muội", meaning: "em gái" },
   { kanji: "姉", hanViet: "Tỉ", meaning: "chị gái" },
   { kanji: "漢", hanViet: "Hán", meaning: "Hán, Trung Quốc" },
+  { kanji: "暗", hanViet: "Ám", meaning: "tối" },
+  { kanji: "引", hanViet: "Dẫn", meaning: "kéo, giảm giá" },
+  { kanji: "遠", hanViet: "Viễn", meaning: "xa" },
+  { kanji: "回", hanViet: "Hồi", meaning: "lần, xoay vòng" },
+  { kanji: "寒", hanViet: "Hàn", meaning: "lạnh" },
+  { kanji: "顔", hanViet: "Nhan", meaning: "khuôn mặt" },
+  { kanji: "区", hanViet: "Khu", meaning: "khu, quận" },
+  { kanji: "軽", hanViet: "Khinh", meaning: "nhẹ" },
+  { kanji: "県", hanViet: "Huyện", meaning: "tỉnh" },
+  { kanji: "光", hanViet: "Quang", meaning: "ánh sáng" },
+  { kanji: "好", hanViet: "Hảo/Hiếu", meaning: "thích, tốt" },
+  { kanji: "合", hanViet: "Hợp", meaning: "hợp, nối lại" },
+  { kanji: "菜", hanViet: "Thái", meaning: "rau" },
+  { kanji: "産", hanViet: "Sản", meaning: "sinh sản, sản xuất" },
+  { kanji: "市", hanViet: "Thị", meaning: "thành phố, chợ" },
+  { kanji: "弱", hanViet: "Nhược", meaning: "yếu" },
+  { kanji: "首", hanViet: "Thủ", meaning: "cổ, đầu" },
+  { kanji: "所", hanViet: "Sở", meaning: "nơi, chỗ" },
+  { kanji: "暑", hanViet: "Thử", meaning: "nóng" },
+  { kanji: "乗", hanViet: "Thừa", meaning: "lên xe, cưỡi" },
+  { kanji: "森", hanViet: "Sâm", meaning: "rừng rậm" },
+  { kanji: "進", hanViet: "Tiến", meaning: "tiến lên" },
+  { kanji: "声", hanViet: "Thanh", meaning: "giọng nói, tiếng" },
+  { kanji: "説", hanViet: "Thuyết", meaning: "giải thích, học thuyết" },
+  { kanji: "洗", hanViet: "Tẩy", meaning: "rửa" },
+  { kanji: "村", hanViet: "Thôn", meaning: "làng" },
+  { kanji: "太", hanViet: "Thái", meaning: "to, dày" },
+  { kanji: "短", hanViet: "Đoản", meaning: "ngắn" },
+  { kanji: "池", hanViet: "Trì", meaning: "ao, hồ" },
+  { kanji: "低", hanViet: "Đê", meaning: "thấp" },
+  { kanji: "都", hanViet: "Đô", meaning: "thủ đô, đô thị" },
+  { kanji: "頭", hanViet: "Đầu", meaning: "đầu" },
+  { kanji: "働", hanViet: "Động", meaning: "làm việc" },
+  { kanji: "便", hanViet: "Tiện/Biện", meaning: "tiện lợi, thư tín" },
+  { kanji: "民", hanViet: "Dân", meaning: "người dân" },
+  { kanji: "門", hanViet: "Môn", meaning: "cổng" },
+  { kanji: "薬", hanViet: "Dược", meaning: "thuốc" },
+  { kanji: "林", hanViet: "Lâm", meaning: "rừng thưa" },
 ];
+
+const n4SourceKanji = "悪暗医意以引院員運英映遠屋音歌夏家画海回開界楽館漢寒顔帰起究急牛去強教京業近銀区計兄軽犬研県建験元工広考光好合黒菜作産紙思姉止市仕死使始試私字自事持室質写者借弱首主秋集習終住重春所暑場乗色森心親真進図青正声世赤夕切説洗早走送族村体太待貸台代題短知地池茶着昼注町鳥朝通弟低転田都度答冬頭同動堂働特肉売発飯病品不風服物文別勉便歩方妹味民明門問夜野薬有曜用洋理旅料力林";
+const n4SourceSet = new Set([...n4SourceKanji]);
+const n5KanjiSet = new Set(n5Cards.map((card) => card.kanji));
+const n4OnlyCards = n4Cards.filter((card) => n4SourceSet.has(card.kanji) && !n5KanjiSet.has(card.kanji));
 
 const decks = {
   n5: n5Cards,
-  n4: n4Cards,
+  n4: n4OnlyCards,
 };
 
-const allCards = [...n5Cards, ...n4Cards];
+const allCards = [...n5Cards, ...n4OnlyCards];
 
 const LISTS = {
+  all: "Tất cả",
   n5: "Kanji N5",
   n4: "Kanji N4",
   favorites: "Yêu thích",
@@ -316,7 +383,7 @@ export default function App() {
 
   const favoriteSet = new Set(favoriteIds);
   const learnedSet = new Set(learnedIds);
-  const sourceCards = decks[activeList] ?? allCards;
+  const sourceCards = activeList === "all" ? allCards : decks[activeList] ?? allCards;
   const visibleCards = sourceCards.filter((card) => {
     if (activeList === "learned") return learnedSet.has(card.kanji);
     if (learnedSet.has(card.kanji)) return false;

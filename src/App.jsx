@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Check, ChevronLeft, ChevronRight, RotateCcw, Star } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Play, RotateCcw, Star } from "lucide-react";
 
 const n5Cards = [
   { kanji: "\u65e5", hanViet: "Nh\u1eadt", meaning: "ng\u00e0y, m\u1eb7t tr\u1eddi" },
@@ -346,10 +346,28 @@ const LABELS = {
   previous: "Thẻ trước",
   shuffle: "Xáo trộn",
   next: "Thẻ sau",
+  revealOrNext: "Hiện nghĩa / thẻ sau",
+};
+
+const SHORTCUTS = {
+  previous: "←",
+  favorite: "F",
+  shuffle: "R",
+  revealOrNext: "Space",
+  learned: "D",
+  next: "→",
 };
 
 const FAVORITES_KEY = "kanji-n5-favorites";
 const LEARNED_KEY = "kanji-n5-learned";
+
+function withShortcut(label, shortcut) {
+  return `${label} (${shortcut})`;
+}
+
+function isTypingTarget(target) {
+  return target.closest?.("input, textarea, select, [contenteditable='true']");
+}
 
 function getStoredList(key) {
   try {
@@ -430,6 +448,17 @@ export default function App() {
     setIsAnswerVisible((visible) => !visible);
   };
 
+  const revealOrNext = () => {
+    if (!card) return;
+
+    if (!isAnswerVisible) {
+      setIsAnswerVisible(true);
+      return;
+    }
+
+    showNext();
+  };
+
   const changeList = (event) => {
     setActiveList(event.target.value);
     setCurrentIndex(0);
@@ -457,26 +486,41 @@ export default function App() {
 
   useEffect(() => {
     const handleKeyDown = (event) => {
+      if (isTypingTarget(event.target)) return;
       if (visibleCards.length === 0) return;
 
       if (event.key === "ArrowLeft") {
+        event.preventDefault();
         setCurrentIndex((index) => (index - 1 + visibleCards.length) % visibleCards.length);
         setIsAnswerVisible(false);
       }
       if (event.key === "ArrowRight") {
+        event.preventDefault();
         setCurrentIndex((index) => (index + 1) % visibleCards.length);
         setIsAnswerVisible(false);
       }
-      if (event.key === " " || event.key === "Enter") {
+      if (event.key.toLowerCase() === "r") {
         event.preventDefault();
         setCurrentIndex((index) => getRandomIndex(index, visibleCards.length));
         setIsAnswerVisible(false);
+      }
+      if (event.key.toLowerCase() === "f" && card && !isLearned) {
+        event.preventDefault();
+        toggleFavorite();
+      }
+      if (event.key.toLowerCase() === "d" && card) {
+        event.preventDefault();
+        toggleLearned();
+      }
+      if (event.key === " " && !event.target.closest?.("button")) {
+        event.preventDefault();
+        revealOrNext();
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [visibleCards.length]);
+  }, [card, isAnswerVisible, isLearned, visibleCards.length]);
 
   return (
     <main className="app" aria-live="polite">
@@ -484,7 +528,7 @@ export default function App() {
         <div className="toolbar">
           <label className="list-picker">
             <span>{LABELS.list}</span>
-            <select value={activeList} onChange={changeList}>
+            <select value={activeList} onChange={changeList} tabIndex={-1}>
               {Object.entries(LISTS).map(([value, label]) => (
                 <option key={value} value={value}>
                   {label}
@@ -498,6 +542,7 @@ export default function App() {
           <button
             className="flashcard"
             type="button"
+            tabIndex={-1}
             aria-label={isAnswerVisible ? LABELS.hideAnswer : LABELS.showAnswer}
             aria-pressed={isAnswerVisible}
             onClick={toggleAnswer}
@@ -521,35 +566,68 @@ export default function App() {
       </div>
 
       <nav className="controls" aria-label={LABELS.controls}>
-        <button type="button" aria-label={LABELS.previous} title={LABELS.previous} onClick={showPrevious} disabled={!card}>
+        <button
+          type="button"
+          aria-label={withShortcut(LABELS.previous, SHORTCUTS.previous)}
+          title={withShortcut(LABELS.previous, SHORTCUTS.previous)}
+          tabIndex={-1}
+          onClick={showPrevious}
+          disabled={!card}
+        >
           <ChevronLeft className="control-icon" aria-hidden="true" strokeWidth={2.4} />
         </button>
         <button
           className={isFavorite ? "control-active" : ""}
           type="button"
-          aria-label={LABELS.favorite}
-          title={LABELS.favorite}
+          aria-label={withShortcut(LABELS.favorite, SHORTCUTS.favorite)}
+          title={withShortcut(LABELS.favorite, SHORTCUTS.favorite)}
+          tabIndex={-1}
           aria-pressed={isFavorite}
           onClick={toggleFavorite}
           disabled={!card || isLearned}
         >
           <Star className="control-icon" aria-hidden="true" fill={isFavorite ? "currentColor" : "none"} strokeWidth={2.4} />
         </button>
-        <button type="button" aria-label={LABELS.shuffle} title={LABELS.shuffle} onClick={shuffleCard} disabled={!card}>
+        <button
+          type="button"
+          aria-label={withShortcut(LABELS.shuffle, SHORTCUTS.shuffle)}
+          title={withShortcut(LABELS.shuffle, SHORTCUTS.shuffle)}
+          tabIndex={-1}
+          onClick={shuffleCard}
+          disabled={!card}
+        >
           <RotateCcw className="control-icon" aria-hidden="true" strokeWidth={2.4} />
+        </button>
+        <button
+          type="button"
+          aria-label={withShortcut(LABELS.revealOrNext, SHORTCUTS.revealOrNext)}
+          title={withShortcut(LABELS.revealOrNext, SHORTCUTS.revealOrNext)}
+          tabIndex={-1}
+          onClick={revealOrNext}
+          disabled={!card}
+        >
+          <Play className="control-icon control-icon-play" aria-hidden="true" fill="currentColor" strokeWidth={2.4} />
         </button>
         <button
           className={isLearned ? "control-active" : ""}
           type="button"
-          aria-label={LABELS.learned}
-          title={LABELS.learned}
+          aria-label={withShortcut(LABELS.learned, SHORTCUTS.learned)}
+          title={withShortcut(LABELS.learned, SHORTCUTS.learned)}
+          tabIndex={-1}
           aria-pressed={isLearned}
           onClick={toggleLearned}
           disabled={!card}
         >
           <Check className="control-icon" aria-hidden="true" strokeWidth={2.4} />
         </button>
-        <button type="button" aria-label={LABELS.next} title={LABELS.next} onClick={showNext} disabled={!card}>
+        <button
+          type="button"
+          aria-label={withShortcut(LABELS.next, SHORTCUTS.next)}
+          title={withShortcut(LABELS.next, SHORTCUTS.next)}
+          tabIndex={-1}
+          onClick={showNext}
+          disabled={!card}
+        >
           <ChevronRight className="control-icon" aria-hidden="true" strokeWidth={2.4} />
         </button>
       </nav>

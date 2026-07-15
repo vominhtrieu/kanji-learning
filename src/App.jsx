@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Check, ChevronLeft, ChevronRight, Play, RotateCcw, Star } from "lucide-react";
+import { Brush, Check, ChevronLeft, ChevronRight, Pencil, Play, RotateCcw, Star } from "lucide-react";
 
 const n5Cards = [
   { kanji: "\u65e5", hanViet: "Nh\u1eadt", meaning: "ng\u00e0y, m\u1eb7t tr\u1eddi" },
@@ -333,7 +333,19 @@ const LISTS = {
   n4: "Kanji N4",
   favorites: "Yêu thích",
   learned: "Đã thuộc",
+  tree: "Cây Kanji",
 };
+
+const LIST_ROUTES = {
+  all: "/all",
+  n5: "/n5",
+  n4: "/n4",
+  favorites: "/favorites",
+  learned: "/learned",
+  tree: "/tree",
+};
+
+const ROUTE_LISTS = Object.fromEntries(Object.entries(LIST_ROUTES).map(([key, path]) => [path, key]));
 
 const LABELS = {
   list: "Danh sách",
@@ -343,6 +355,8 @@ const LABELS = {
   showAnswer: "Hiện đáp án",
   hideAnswer: "Ẩn đáp án",
   controls: "Điều khiển flashcard",
+  writingMode: "Luyện viết",
+  strokeOrder: "Thứ tự nét",
   previous: "Thẻ trước",
   shuffle: "Xáo trộn",
   next: "Thẻ sau",
@@ -352,6 +366,7 @@ const LABELS = {
 const SHORTCUTS = {
   previous: "←",
   favorite: "F",
+  strokeOrder: "S",
   shuffle: "R",
   revealOrNext: "Space",
   learned: "D",
@@ -360,6 +375,46 @@ const SHORTCUTS = {
 
 const FAVORITES_KEY = "kanji-n5-favorites";
 const LEARNED_KEY = "kanji-n5-learned";
+const STROKE_DELAY_SECONDS = 0.31;
+const STROKE_DRAW_SECONDS = 0.46;
+const STROKE_REPLAY_PAUSE_MS = 5000;
+
+const KANJI_TREE_GROUPS = [
+  { root: "口", title: "Khung miệng", kanji: "口右古名同問品員兄" },
+  { root: "目", title: "Mắt / phần 目", kanji: "目見親真" },
+  { root: "貝", title: "Vỏ sò / tiền", kanji: "買員質貸" },
+  { root: "頁", title: "Trang / đầu", kanji: "題顔頭" },
+  { root: "耳", title: "Tai", kanji: "耳聞取" },
+  { root: "走", title: "Tẩu / chạy", kanji: "走起" },
+  { root: "日", title: "Mặt trời / ngày", kanji: "日明時曜間春者音題" },
+  { root: "白", title: "Trắng / phần 白", kanji: "白百" },
+  { root: "月", title: "Trăng / phần 月", kanji: "月明朝服有青" },
+  { root: "木", title: "Cây / phần 木", kanji: "木本休体林森東楽校来村" },
+  { root: "人", title: "Người / nhân đứng", kanji: "人休体今会何作使住代他仕働" },
+  { root: "宀", title: "Mái nhà", kanji: "安字室家寒院館" },
+  { root: "女", title: "Nữ", kanji: "女好安姉妹" },
+  { root: "子", title: "Tử", kanji: "子字学好" },
+  { root: "心", title: "Tâm / cảm xúc", kanji: "心思悪意急" },
+  { root: "田", title: "Ruộng / phần 田", kanji: "田男町思界番" },
+  { root: "力", title: "Sức lực", kanji: "力男勉動働" },
+  { root: "言", title: "Ngôn / lời nói", kanji: "言語読話説計試" },
+  { root: "門", title: "Cổng", kanji: "門間聞問開" },
+  { root: "水", title: "Nước / thủy", kanji: "水海池洗注" },
+  { root: "火", title: "Lửa", kanji: "火秋" },
+  { root: "禾", title: "Lúa", kanji: "私秋科" },
+  { root: "土", title: "Đất", kanji: "土地場社" },
+  { root: "金", title: "Kim loại / tiền", kanji: "金銀銭" },
+  { root: "車", title: "Xe", kanji: "車転運軽" },
+  { root: "辶", title: "Đi / di chuyển", kanji: "近遠通週送道運進" },
+  { root: "糸", title: "Sợi", kanji: "紙線終練続" },
+  { root: "手", title: "Tay", kanji: "手持授拾打" },
+  { root: "食", title: "Ăn uống", kanji: "食飲飯館" },
+  { root: "雨", title: "Mưa", kanji: "雨電雪" },
+  { root: "攵", title: "Đánh / tác động", kanji: "教数政" },
+  { root: "阝", title: "Gò / thành", kanji: "院都部" },
+  { root: "刂", title: "Dao đứng", kanji: "別利" },
+  { root: "广", title: "Mái che", kanji: "店広度病" },
+];
 
 function withShortcut(label, shortcut) {
   return `${label} (${shortcut})`;
@@ -367,6 +422,21 @@ function withShortcut(label, shortcut) {
 
 function isTypingTarget(target) {
   return target.closest?.("input, textarea, select, [contenteditable='true']");
+}
+
+function getListFromPath() {
+  const normalizedPath = window.location.pathname.replace(/\/+$/, "") || "/n5";
+  return ROUTE_LISTS[normalizedPath] ?? "n5";
+}
+
+function getKanjiVGUrl(kanji) {
+  const codePoint = kanji.codePointAt(0).toString(16).padStart(5, "0");
+  return `https://cdn.jsdelivr.net/gh/KanjiVG/kanjivg@master/kanji/${codePoint}.svg`;
+}
+
+function extractStrokePaths(svgText) {
+  const document = new DOMParser().parseFromString(svgText, "image/svg+xml");
+  return [...document.querySelectorAll("path[d]")].map((path) => path.getAttribute("d"));
 }
 
 function getStoredList(key) {
@@ -392,16 +462,82 @@ function getRandomIndex(currentIndex, listLength) {
   return nextIndex;
 }
 
+function getTreeGroups(cards) {
+  const cardByKanji = new Map(cards.map((card) => [card.kanji, card]));
+  const groupedKanji = new Set();
+
+  const groups = KANJI_TREE_GROUPS.map((group) => {
+    const seenInGroup = new Set();
+    const groupCards = [...group.kanji]
+      .map((kanji) => cardByKanji.get(kanji))
+      .filter(Boolean)
+      .filter((card) => {
+        if (seenInGroup.has(card.kanji)) return false;
+        seenInGroup.add(card.kanji);
+        groupedKanji.add(card.kanji);
+        return true;
+      });
+
+    return { root: group.root, title: group.title, cards: groupCards };
+  }).filter((group) => group.cards.length > 1);
+
+  const remainingCards = cards.filter((card) => !groupedKanji.has(card.kanji));
+  if (remainingCards.length > 0) {
+    groups.push({ root: "他", title: "Chưa ghép nhóm", cards: remainingCards });
+  }
+
+  return groups;
+}
+
+function KanjiTree({ cards }) {
+  const groups = getTreeGroups(cards);
+
+  return (
+    <section className="tree-page" aria-label="Cây Kanji">
+      <header className="tree-header">
+        <h1>Cây Kanji</h1>
+        <span>{cards.length} chữ N5 + N4 theo phần viết giống nhau</span>
+      </header>
+      <div className="tree-root">Cấu tạo chữ</div>
+      <div className="tree-branches">
+        {groups.map((group) => (
+          <section className="tree-branch" key={group.title}>
+            <div className="tree-branch-head">
+              <strong>{group.root}</strong>
+              <h2>{group.title}</h2>
+            </div>
+            <div className="tree-kanji-list">
+              {group.cards.slice(0, 16).map((card) => (
+                <span className="tree-kanji-chip" key={card.kanji} title={`${card.hanViet} - ${card.meaning}`}>
+                  <strong>{card.kanji}</strong>
+                  <span>{card.hanViet}</span>
+                  <small>{card.meaning}</small>
+                </span>
+              ))}
+            </div>
+          </section>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 export default function App() {
-  const [activeList, setActiveList] = useState("n5");
+  const [activeList, setActiveList] = useState(() => getListFromPath());
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAnswerVisible, setIsAnswerVisible] = useState(false);
+  const [isWritingMode, setIsWritingMode] = useState(false);
+  const [isStrokePanelVisible, setIsStrokePanelVisible] = useState(false);
+  const [strokePaths, setStrokePaths] = useState([]);
+  const [strokeStatus, setStrokeStatus] = useState("idle");
+  const [strokeReplayKey, setStrokeReplayKey] = useState(0);
   const [favoriteIds, setFavoriteIds] = useState(() => getStoredList(FAVORITES_KEY));
   const [learnedIds, setLearnedIds] = useState(() => getStoredList(LEARNED_KEY));
 
   const favoriteSet = new Set(favoriteIds);
   const learnedSet = new Set(learnedIds);
-  const sourceCards = activeList === "all" ? allCards : decks[activeList] ?? allCards;
+  const isTreePage = activeList === "tree";
+  const sourceCards = isTreePage ? [] : activeList === "all" ? allCards : decks[activeList] ?? allCards;
   const visibleCards = sourceCards.filter((card) => {
     if (activeList === "learned") return learnedSet.has(card.kanji);
     if (learnedSet.has(card.kanji)) return false;
@@ -421,9 +557,75 @@ export default function App() {
   }, [learnedIds]);
 
   useEffect(() => {
+    const normalizedPath = window.location.pathname.replace(/\/+$/, "") || "/";
+    if (!ROUTE_LISTS[normalizedPath]) {
+      window.history.replaceState(null, "", LIST_ROUTES[activeList] ?? LIST_ROUTES.n5);
+    }
+  }, [activeList]);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      setActiveList(getListFromPath());
+      setCurrentIndex(0);
+      setIsAnswerVisible(false);
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
+  useEffect(() => {
     setCurrentIndex((index) => Math.min(index, Math.max(visibleCards.length - 1, 0)));
     setIsAnswerVisible(false);
   }, [activeList, favoriteIds, learnedIds, visibleCards.length]);
+
+  useEffect(() => {
+    if (!card || !isStrokePanelVisible) {
+      setStrokeStatus("idle");
+      return;
+    }
+
+    const controller = new AbortController();
+
+    async function loadStrokePaths() {
+      setStrokeStatus("loading");
+      setStrokePaths([]);
+
+      try {
+        const response = await fetch(getKanjiVGUrl(card.kanji), { signal: controller.signal });
+        if (!response.ok) throw new Error("KanjiVG file not found");
+
+        const svgText = await response.text();
+        const paths = extractStrokePaths(svgText);
+        if (paths.length === 0) throw new Error("No stroke paths found");
+
+        setStrokePaths(paths);
+        setStrokeReplayKey((key) => key + 1);
+        setStrokeStatus("ready");
+      } catch (error) {
+        if (error.name !== "AbortError") {
+          setStrokeStatus("error");
+        }
+      }
+    }
+
+    loadStrokePaths();
+    return () => controller.abort();
+  }, [card, isStrokePanelVisible]);
+
+  useEffect(() => {
+    if (!isStrokePanelVisible || strokeStatus !== "ready") return undefined;
+
+    const fullAnimationMs =
+      Math.max(strokePaths.length - 1, 0) * STROKE_DELAY_SECONDS * 1000 + STROKE_DRAW_SECONDS * 1000;
+    const replayIntervalMs = fullAnimationMs + STROKE_REPLAY_PAUSE_MS;
+
+    const replayTimer = window.setInterval(() => {
+      setStrokeReplayKey((key) => key + 1);
+    }, replayIntervalMs);
+
+    return () => window.clearInterval(replayTimer);
+  }, [isStrokePanelVisible, strokeStatus, strokePaths.length]);
 
   const showPrevious = () => {
     if (visibleCards.length === 0) return;
@@ -459,8 +661,31 @@ export default function App() {
     showNext();
   };
 
-  const changeList = (event) => {
-    setActiveList(event.target.value);
+  const toggleWritingMode = () => {
+    setIsWritingMode((enabled) => !enabled);
+    setIsAnswerVisible(false);
+  };
+
+  const toggleStrokePanel = () => {
+    if (!card) return;
+
+    setIsStrokePanelVisible((visible) => {
+      if (visible) return false;
+      setStrokeReplayKey((key) => key + 1);
+      return true;
+    });
+  };
+
+  const preventButtonFocus = (event) => {
+    event.preventDefault();
+  };
+
+  const changeList = (value) => {
+    const nextPath = LIST_ROUTES[value] ?? LIST_ROUTES.n5;
+    if (window.location.pathname !== nextPath) {
+      window.history.pushState(null, "", nextPath);
+    }
+    setActiveList(value);
     setCurrentIndex(0);
     setIsAnswerVisible(false);
   };
@@ -486,7 +711,14 @@ export default function App() {
 
   useEffect(() => {
     const handleKeyDown = (event) => {
+      if (event.key === "Tab") {
+        event.preventDefault();
+        document.activeElement?.blur?.();
+        return;
+      }
+
       if (isTypingTarget(event.target)) return;
+      if (isTreePage) return;
       if (visibleCards.length === 0) return;
 
       if (event.key === "ArrowLeft") {
@@ -508,6 +740,10 @@ export default function App() {
         event.preventDefault();
         toggleFavorite();
       }
+      if (event.key.toLowerCase() === "s" && card) {
+        event.preventDefault();
+        toggleStrokePanel();
+      }
       if (event.key.toLowerCase() === "d" && card) {
         event.preventDefault();
         toggleLearned();
@@ -518,38 +754,85 @@ export default function App() {
       }
     };
 
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [card, isAnswerVisible, isLearned, visibleCards.length]);
+    window.addEventListener("keydown", handleKeyDown, { capture: true });
+    return () => window.removeEventListener("keydown", handleKeyDown, { capture: true });
+  }, [card, isAnswerVisible, isLearned, isTreePage, visibleCards.length]);
 
   return (
-    <main className="app" aria-live="polite">
+    <main className={isTreePage ? "app app-tree" : "app"} aria-live="polite">
       <div className="study-panel">
         <div className="toolbar">
-          <label className="list-picker">
-            <span>{LABELS.list}</span>
-            <select value={activeList} onChange={changeList} tabIndex={-1}>
-              {Object.entries(LISTS).map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
-            </select>
-          </label>
+          <nav className="list-navbar" aria-label={LABELS.list}>
+            {Object.entries(LISTS).map(([value, label]) => (
+              <a
+                key={value}
+                className={activeList === value ? "list-nav-item list-nav-item-active" : "list-nav-item"}
+                href={LIST_ROUTES[value]}
+                tabIndex={-1}
+                onMouseDown={preventButtonFocus}
+                onClick={(event) => {
+                  event.preventDefault();
+                  changeList(value);
+                }}
+                aria-current={activeList === value ? "page" : undefined}
+              >
+                {label}
+              </a>
+            ))}
+          </nav>
         </div>
 
-        {card ? (
+        {isTreePage ? (
+          <KanjiTree cards={allCards} />
+        ) : card ? (
           <button
             className="flashcard"
             type="button"
             tabIndex={-1}
+            onMouseDown={preventButtonFocus}
             aria-label={isAnswerVisible ? LABELS.hideAnswer : LABELS.showAnswer}
             aria-pressed={isAnswerVisible}
             onClick={toggleAnswer}
           >
-            <div className="kanji">{card.kanji}</div>
-            <div className={`details ${isAnswerVisible ? "details-visible" : ""}`} aria-hidden={!isAnswerVisible}>
-              {isAnswerVisible ? (
+            <div className={`kanji-slot ${isStrokePanelVisible ? "kanji-slot-stroke" : ""}`}>
+              <div className={`kanji ${isWritingMode && !isAnswerVisible ? "kanji-hidden" : ""}`} aria-hidden={isWritingMode && !isAnswerVisible}>
+              {isStrokePanelVisible ? (
+                <div className="inline-stroke" aria-live="polite">
+                  {strokeStatus === "loading" ? (
+                    <span className="stroke-message">Đang tải nét...</span>
+                  ) : null}
+                  {strokeStatus === "error" ? (
+                    <span className="stroke-message">Chưa có dữ liệu nét.</span>
+                  ) : null}
+                  {strokeStatus === "ready" ? (
+                    <svg key={strokeReplayKey} className="stroke-svg" viewBox="0 0 109 109" role="img" aria-label={`Thứ tự nét ${card.kanji}`}>
+                      <path className="stroke-guide" d="M54.5 4 V105 M4 54.5 H105 M16 16 L93 93 M93 16 L16 93" />
+                      {strokePaths.map((path, index) => (
+                        <path key={`ghost-${index}`} className="stroke-ghost" d={path} pathLength="1" />
+                      ))}
+                      {strokePaths.map((path, index) => (
+                        <path
+                          key={`stroke-${index}`}
+                          className="stroke-step"
+                          d={path}
+                          pathLength="1"
+                          style={{
+                            animationDelay: `${index * STROKE_DELAY_SECONDS}s`,
+                          }}
+                        />
+                      ))}
+                    </svg>
+                  ) : null}
+                </div>
+              ) : isWritingMode && !isAnswerVisible ? (
+                "?"
+              ) : (
+                card.kanji
+              )}
+              </div>
+            </div>
+            <div className={`details ${isAnswerVisible || isWritingMode ? "details-visible" : ""}`} aria-hidden={!isAnswerVisible && !isWritingMode}>
+              {isAnswerVisible || isWritingMode ? (
                 <>
                   <p className="han-viet">{card.hanViet}</p>
                   <p className="meaning">{card.meaning}</p>
@@ -565,12 +848,14 @@ export default function App() {
         )}
       </div>
 
+      {!isTreePage ? (
       <nav className="controls" aria-label={LABELS.controls}>
         <button
           type="button"
           aria-label={withShortcut(LABELS.previous, SHORTCUTS.previous)}
           title={withShortcut(LABELS.previous, SHORTCUTS.previous)}
           tabIndex={-1}
+          onMouseDown={preventButtonFocus}
           onClick={showPrevious}
           disabled={!card}
         >
@@ -582,6 +867,7 @@ export default function App() {
           aria-label={withShortcut(LABELS.favorite, SHORTCUTS.favorite)}
           title={withShortcut(LABELS.favorite, SHORTCUTS.favorite)}
           tabIndex={-1}
+          onMouseDown={preventButtonFocus}
           aria-pressed={isFavorite}
           onClick={toggleFavorite}
           disabled={!card || isLearned}
@@ -589,10 +875,37 @@ export default function App() {
           <Star className="control-icon" aria-hidden="true" fill={isFavorite ? "currentColor" : "none"} strokeWidth={2.4} />
         </button>
         <button
+          className={isWritingMode ? "control-active" : ""}
+          type="button"
+          aria-label={LABELS.writingMode}
+          title={LABELS.writingMode}
+          tabIndex={-1}
+          onMouseDown={preventButtonFocus}
+          aria-pressed={isWritingMode}
+          onClick={toggleWritingMode}
+          disabled={!card}
+        >
+          <Pencil className="control-icon" aria-hidden="true" strokeWidth={2.4} />
+        </button>
+        <button
+          className={isStrokePanelVisible ? "control-active" : ""}
+          type="button"
+          aria-label={withShortcut(LABELS.strokeOrder, SHORTCUTS.strokeOrder)}
+          title={withShortcut(LABELS.strokeOrder, SHORTCUTS.strokeOrder)}
+          tabIndex={-1}
+          onMouseDown={preventButtonFocus}
+          aria-pressed={isStrokePanelVisible}
+          onClick={toggleStrokePanel}
+          disabled={!card}
+        >
+          <Brush className="control-icon" aria-hidden="true" strokeWidth={2.4} />
+        </button>
+        <button
           type="button"
           aria-label={withShortcut(LABELS.shuffle, SHORTCUTS.shuffle)}
           title={withShortcut(LABELS.shuffle, SHORTCUTS.shuffle)}
           tabIndex={-1}
+          onMouseDown={preventButtonFocus}
           onClick={shuffleCard}
           disabled={!card}
         >
@@ -603,6 +916,7 @@ export default function App() {
           aria-label={withShortcut(LABELS.revealOrNext, SHORTCUTS.revealOrNext)}
           title={withShortcut(LABELS.revealOrNext, SHORTCUTS.revealOrNext)}
           tabIndex={-1}
+          onMouseDown={preventButtonFocus}
           onClick={revealOrNext}
           disabled={!card}
         >
@@ -614,6 +928,7 @@ export default function App() {
           aria-label={withShortcut(LABELS.learned, SHORTCUTS.learned)}
           title={withShortcut(LABELS.learned, SHORTCUTS.learned)}
           tabIndex={-1}
+          onMouseDown={preventButtonFocus}
           aria-pressed={isLearned}
           onClick={toggleLearned}
           disabled={!card}
@@ -625,12 +940,14 @@ export default function App() {
           aria-label={withShortcut(LABELS.next, SHORTCUTS.next)}
           title={withShortcut(LABELS.next, SHORTCUTS.next)}
           tabIndex={-1}
+          onMouseDown={preventButtonFocus}
           onClick={showNext}
           disabled={!card}
         >
           <ChevronRight className="control-icon" aria-hidden="true" strokeWidth={2.4} />
         </button>
       </nav>
+      ) : null}
     </main>
   );
 }

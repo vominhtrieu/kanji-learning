@@ -46,31 +46,59 @@ body {
   gap: 16px;
 }
 
+.app-tree {
+  grid-template-rows: 1fr;
+}
+
+.app-tree .study-panel {
+  width: min(100%, 760px);
+}
+
 .toolbar {
   display: flex;
   justify-content: center;
 }
 
-.list-picker {
-  display: grid;
-  gap: 6px;
-  color: var(--muted);
-  font-size: 0.82rem;
-  font-weight: 700;
-  text-align: center;
+.list-navbar {
+  max-width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
 }
 
-.list-picker select {
-  min-width: 150px;
-  height: 42px;
-  padding: 0 34px 0 13px;
+.list-nav-item {
+  min-height: 40px;
+  padding: 0 13px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border: 1px solid rgba(32, 36, 39, 0.16);
   border-radius: 8px;
   background: rgba(255, 252, 246, 0.92);
-  color: var(--ink);
+  color: var(--teal);
   font: inherit;
   font-weight: 700;
+  text-decoration: none;
   box-shadow: 0 10px 24px rgba(32, 36, 39, 0.1);
+  cursor: pointer;
+  transition:
+    transform 160ms ease,
+    background 160ms ease,
+    color 160ms ease,
+    border-color 160ms ease;
+}
+
+.list-nav-item:hover {
+  transform: translateY(-1px);
+  background: #ffffff;
+  color: var(--seal);
+}
+
+.list-nav-item-active {
+  border-color: rgba(185, 65, 49, 0.42);
+  background: rgba(255, 245, 239, 0.94);
+  color: var(--seal);
 }
 
 .controls button:disabled {
@@ -81,7 +109,8 @@ body {
 
 .flashcard {
   width: min(100%, 560px);
-  min-height: min(68vh, 580px);
+  height: min(68vh, 580px);
+  min-height: 420px;
   margin: 0 auto;
   padding: clamp(28px, 7vw, 64px);
   display: grid;
@@ -110,10 +139,23 @@ body {
   box-shadow: 0 32px 78px rgba(32, 36, 39, 0.2);
 }
 
+.kanji-slot {
+  width: 100%;
+  height: clamp(230px, 34vh, 330px);
+  display: grid;
+  place-items: center;
+}
+
 .kanji {
   line-height: 0.95;
   text-align: center;
-  font-family: "Yu Mincho", "Hiragino Mincho ProN", "MS Mincho", serif;
+  font-family:
+    "Yu Mincho",
+    "Hiragino Mincho ProN",
+    "YuMincho",
+    "Noto Serif JP",
+    "MS Mincho",
+    serif;
   font-size: clamp(8rem, 24vh, 15rem);
   font-weight: 700;
   letter-spacing: 0;
@@ -121,8 +163,16 @@ body {
   text-wrap: balance;
 }
 
+.kanji-hidden {
+  color: rgba(32, 36, 39, 0.2);
+  font-family: "Segoe UI", system-ui, sans-serif;
+  font-size: clamp(5rem, 16vh, 9rem);
+  font-weight: 800;
+}
+
 .details {
-  min-height: 96px;
+  height: 112px;
+  min-height: 112px;
   display: grid;
   gap: 12px;
   align-content: end;
@@ -191,8 +241,196 @@ body {
   font-size: 1rem;
 }
 
+.tree-page {
+  width: 100%;
+  margin: 0 auto;
+  padding: clamp(18px, 4vw, 28px);
+  display: grid;
+  gap: 18px;
+  border: 1px solid rgba(88, 70, 49, 0.2);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(255, 252, 246, 0.84), rgba(247, 239, 225, 0.92)),
+    var(--paper);
+  box-shadow: 0 28px 70px var(--shadow);
+}
+
+.tree-header {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  text-align: center;
+}
+
+.tree-header h1 {
+  margin: 0;
+  color: var(--seal);
+  font-size: clamp(1.65rem, 5vw, 2.45rem);
+  line-height: 1.1;
+}
+
+.tree-header span {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.tree-root {
+  width: fit-content;
+  margin: 0 auto;
+  padding: 8px 14px;
+  border: 1px solid rgba(185, 65, 49, 0.32);
+  border-radius: 8px;
+  background: rgba(255, 245, 239, 0.94);
+  color: var(--seal);
+  font-weight: 800;
+}
+
+.tree-branches {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.tree-branch {
+  padding: 14px;
+  border: 1px solid rgba(32, 36, 39, 0.12);
+  border-radius: 8px;
+  background: rgba(255, 252, 246, 0.64);
+}
+
+.tree-branch-head {
+  min-height: 44px;
+  margin: 0 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tree-branch-head > strong {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(185, 65, 49, 0.28);
+  border-radius: 50%;
+  background: rgba(255, 245, 239, 0.9);
+  color: var(--seal);
+  font-family:
+    "Yu Mincho",
+    "Hiragino Mincho ProN",
+    "YuMincho",
+    "Noto Serif JP",
+    "MS Mincho",
+    serif;
+  font-size: 1.45rem;
+  line-height: 1;
+  flex: 0 0 auto;
+}
+
+.tree-branch h2 {
+  margin: 0;
+  color: var(--teal);
+  font-size: 1rem;
+  line-height: 1.25;
+}
+
+.tree-kanji-list {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.tree-kanji-chip {
+  min-height: 128px;
+  padding: 12px 9px;
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  align-items: start;
+  justify-items: center;
+  gap: 3px;
+  border: 1px solid rgba(88, 70, 49, 0.14);
+  border-radius: 8px;
+  background: rgba(255, 252, 246, 0.78);
+  text-align: center;
+}
+
+.tree-kanji-chip strong {
+  color: var(--ink);
+  font-family:
+    "Yu Mincho",
+    "Hiragino Mincho ProN",
+    "YuMincho",
+    "Noto Serif JP",
+    "MS Mincho",
+    serif;
+  font-size: clamp(2.5rem, 8vw, 4rem);
+  line-height: 1;
+}
+
+.tree-kanji-chip span {
+  color: var(--seal);
+  font-size: 0.82rem;
+  font-weight: 800;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+.tree-kanji-chip small {
+  color: var(--muted);
+  font-size: 0.72rem;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.inline-stroke {
+  width: min(78vw, 330px, 100%);
+  aspect-ratio: 1;
+  margin: 0 auto;
+  display: grid;
+  place-items: center;
+}
+
+.stroke-svg {
+  width: 100%;
+  aspect-ratio: 1;
+  display: block;
+  overflow: visible;
+}
+
+.stroke-guide {
+  display: none;
+}
+
+.stroke-ghost {
+  fill: none;
+  stroke: rgba(32, 36, 39, 0.16);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 3;
+}
+
+.stroke-step {
+  fill: none;
+  stroke: var(--ink);
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 3.4;
+  opacity: 0;
+  animation: draw-stroke 460ms ease forwards;
+}
+
+.stroke-message {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
 .controls {
   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
   gap: 12px;
 }
@@ -246,6 +484,18 @@ button:focus-visible {
   outline-offset: 4px;
 }
 
+@keyframes draw-stroke {
+  from {
+    opacity: 0;
+    stroke-dashoffset: 1;
+  }
+
+  to {
+    opacity: 1;
+    stroke-dashoffset: 0;
+  }
+}
+
 @media (max-width: 520px) {
   .app {
     padding: 18px 14px;
@@ -256,12 +506,49 @@ button:focus-visible {
     justify-content: center;
   }
 
-  .list-picker select {
-    width: min(100%, 220px);
+  .list-navbar {
+    gap: 7px;
+  }
+
+  .list-nav-item {
+    min-height: 38px;
+    padding: 0 10px;
+    font-size: 0.88rem;
+  }
+
+  .tree-page {
+    padding: 16px 12px;
+  }
+
+  .tree-branches {
+    grid-template-columns: 1fr;
+  }
+
+  .tree-kanji-list {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .tree-kanji-chip {
+    min-height: 104px;
+    padding: 9px 5px;
+  }
+
+  .tree-kanji-chip strong {
+    font-size: clamp(2rem, 13vw, 3rem);
+  }
+
+  .tree-kanji-chip span {
+    font-size: 0.72rem;
+  }
+
+  .tree-kanji-chip small {
+    font-size: 0.64rem;
   }
 
   .flashcard {
-    min-height: 66vh;
+    height: 66vh;
+    min-height: 390px;
     padding: 26px 18px;
   }
 

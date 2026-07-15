@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="14" fill="#f7efe1"/>
+  <rect x="5" y="5" width="54" height="54" rx="11" fill="none" stroke="#b94131" stroke-width="3"/>
+  <text
+    x="32"
+    y="43"
+    text-anchor="middle"
+    font-family="'Yu Mincho', 'Hiragino Mincho ProN', 'MS Mincho', serif"
+    font-size="34"
+    font-weight="700"
+    fill="#202427"
+  >漢</text>
+</svg>

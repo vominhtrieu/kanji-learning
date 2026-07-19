@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Brush, Check, ChevronLeft, ChevronRight, Pencil, Play, RotateCcw, Star } from "lucide-react";
+import { kanjiComponents } from "./kanjiComponents.js";
 
 const n5Cards = [
   { kanji: "\u65e5", hanViet: "Nh\u1eadt", meaning: "ng\u00e0y, m\u1eb7t tr\u1eddi" },
@@ -379,41 +380,93 @@ const STROKE_DELAY_SECONDS = 0.31;
 const STROKE_DRAW_SECONDS = 0.46;
 const STROKE_REPLAY_PAUSE_MS = 5000;
 
+// Các nhóm "Bộ/Thành phần" lấy thành viên từ kanjiComponents (KanjiVG).
+// Trường kanji chỉ quyết định thành viên cho các nhóm chủ đề có tên bắt đầu bằng "Nhóm".
+// Trường include dành cho ngoại lệ đã được xác nhận thủ công.
 const KANJI_TREE_GROUPS = [
-  { root: "口", title: "Khung miệng", kanji: "口右古名同問品員兄" },
-  { root: "目", title: "Mắt / phần 目", kanji: "目見親真" },
-  { root: "貝", title: "Vỏ sò / tiền", kanji: "買員質貸" },
-  { root: "頁", title: "Trang / đầu", kanji: "題顔頭" },
-  { root: "耳", title: "Tai", kanji: "耳聞取" },
-  { root: "走", title: "Tẩu / chạy", kanji: "走起" },
-  { root: "日", title: "Mặt trời / ngày", kanji: "日明時曜間春者音題" },
-  { root: "白", title: "Trắng / phần 白", kanji: "白百" },
-  { root: "月", title: "Trăng / phần 月", kanji: "月明朝服有青" },
-  { root: "木", title: "Cây / phần 木", kanji: "木本休体林森東楽校来村" },
-  { root: "人", title: "Người / nhân đứng", kanji: "人休体今会何作使住代他仕働" },
-  { root: "宀", title: "Mái nhà", kanji: "安字室家寒院館" },
-  { root: "女", title: "Nữ", kanji: "女好安姉妹" },
-  { root: "子", title: "Tử", kanji: "子字学好" },
-  { root: "心", title: "Tâm / cảm xúc", kanji: "心思悪意急" },
-  { root: "田", title: "Ruộng / phần 田", kanji: "田男町思界番" },
-  { root: "力", title: "Sức lực", kanji: "力男勉動働" },
-  { root: "言", title: "Ngôn / lời nói", kanji: "言語読話説計試" },
-  { root: "門", title: "Cổng", kanji: "門間聞問開" },
-  { root: "水", title: "Nước / thủy", kanji: "水海池洗注" },
-  { root: "火", title: "Lửa", kanji: "火秋" },
-  { root: "禾", title: "Lúa", kanji: "私秋科" },
-  { root: "土", title: "Đất", kanji: "土地場社" },
-  { root: "金", title: "Kim loại / tiền", kanji: "金銀銭" },
-  { root: "車", title: "Xe", kanji: "車転運軽" },
-  { root: "辶", title: "Đi / di chuyển", kanji: "近遠通週送道運進" },
-  { root: "糸", title: "Sợi", kanji: "紙線終練続" },
-  { root: "手", title: "Tay", kanji: "手持授拾打" },
-  { root: "食", title: "Ăn uống", kanji: "食飲飯館" },
-  { root: "雨", title: "Mưa", kanji: "雨電雪" },
-  { root: "攵", title: "Đánh / tác động", kanji: "教数政" },
-  { root: "阝", title: "Gò / thành", kanji: "院都部" },
-  { root: "刂", title: "Dao đứng", kanji: "別利" },
-  { root: "广", title: "Mái che", kanji: "店広度病" },
+  { root: "口", title: "Bộ Khẩu", kanji: "口右古名同問品員兄知始台味答歌堂合" },
+  { root: "目", title: "Bộ Mục", kanji: "目見親真着県" },
+  { root: "貝", title: "Bộ Bối", kanji: "買員質貸" },
+  { root: "頁", title: "Bộ Hiệt", kanji: "題顔頭" },
+  { root: "耳", title: "Bộ Nhĩ", kanji: "耳聞取" },
+  { root: "走", title: "Bộ Tẩu", kanji: "走起" },
+  { root: "日", title: "Bộ Nhật", kanji: "日明時曜間春者音題早映暗暑昼朝書" },
+  { root: "白", title: "Bộ Bạch", kanji: "白百習" },
+  { root: "月", title: "Bộ Nguyệt", kanji: "月明朝服有青用肉" },
+  { root: "木", title: "Bộ Mộc", kanji: "木本休体林森東楽校来村新業集" },
+  { root: "人", title: "Bộ Nhân", kanji: "人入休体今会何作使住代他仕働低便借以" },
+  { root: "宀", title: "Bộ Miên", kanji: "安字室家寒院館写" },
+  { root: "女", title: "Bộ Nữ", kanji: "女好安姉妹始" },
+  { root: "子", title: "Bộ Tử", kanji: "子字学好" },
+  { root: "心", title: "Bộ Tâm", kanji: "心思悪意急" },
+  { root: "田", title: "Bộ Điền", kanji: "田男町思界番画" },
+  { root: "力", title: "Bộ Lực", kanji: "力男勉動働" },
+  { root: "言", title: "Bộ Ngôn", kanji: "言語読話説計試" },
+  { root: "門", title: "Bộ Môn", kanji: "門間聞問開" },
+  { root: "水", title: "Bộ Thủy", kanji: "水海池洗注川洋漢" },
+  { root: "火", title: "Bộ Hỏa", kanji: "火秋黒魚無鳥" },
+  { root: "禾", title: "Bộ Hòa", kanji: "私秋科利乗" },
+  { root: "土", title: "Bộ Thổ", kanji: "土地場社寺去赤堂" },
+  { root: "金", title: "Bộ Kim", kanji: "金銀銭" },
+  { root: "車", title: "Bộ Xa", kanji: "車転運軽" },
+  { root: "辶", title: "Bộ Sước", kanji: "近遠通週送道運進" },
+  { root: "糸", title: "Bộ Mịch", kanji: "紙線終練続" },
+  { root: "手", title: "Bộ Thủ", kanji: "手持授拾打" },
+  { root: "食", title: "Bộ Thực", kanji: "食飲飯館" },
+  { root: "雨", title: "Bộ Vũ", kanji: "雨電雪" },
+  { root: "攵", title: "Bộ Phộc", kanji: "教数政故" },
+  { root: "阝", components: "阜邑", title: "Bộ Phụ / Ấp", kanji: "院都部" },
+  { root: "刂", title: "Bộ Đao đứng", kanji: "別利帰" },
+  { root: "广", title: "Bộ Nghiễm", kanji: "店広度病" },
+  { root: "艹", title: "Bộ Thảo", kanji: "花茶菜薬英" },
+  { root: "囗", title: "Bộ Vi", kanji: "国回図" },
+  { root: "亠", title: "Bộ Đầu", kanji: "京高夜方文六主市" },
+  { root: "大", title: "Bộ Đại", kanji: "大天太犬" },
+  { root: "山", title: "Bộ Sơn", kanji: "山出" },
+  { root: "牛", title: "Bộ Ngưu", kanji: "牛物特" },
+  { root: "方", title: "Bộ Phương", kanji: "方旅族" },
+  { root: "立", title: "Bộ Lập", kanji: "立音意" },
+  { root: "止", title: "Bộ Chỉ", kanji: "止正歩" },
+  { root: "母", title: "Bộ Mẫu", kanji: "母毎" },
+  { root: "弓", title: "Bộ Cung", kanji: "引弱強弟" },
+  { root: "穴", title: "Bộ Huyệt", kanji: "空究" },
+  { root: "彳", title: "Bộ Xích", kanji: "行後待" },
+  { root: "刀", title: "Bộ Đao", kanji: "分切別" },
+  { root: "儿", title: "Bộ Nhân đi", kanji: "先元兄光" },
+  { root: "寺", title: "Thành phần Tự", kanji: "寺時持待特" },
+  { root: "重", include: "働", title: "Bộ Trọng", kanji: "重動働" },
+  { root: "士", title: "Bộ Sĩ", kanji: "士売声" },
+  { root: "一", title: "Nhóm chữ số", kanji: "一二三四五六七八九十百千万" },
+  { root: "方", title: "Nhóm phương hướng", kanji: "東西南北上下中外左前後" },
+  { root: "生", title: "Bộ Sinh", kanji: "生産" },
+  { root: "小", title: "Bộ Tiểu", kanji: "小少" },
+  { root: "馬", title: "Bộ Mã", kanji: "駅験" },
+  { root: "夕", title: "Bộ Tịch", kanji: "夕多夜" },
+  { root: "自", title: "Bộ Tự", kanji: "自首" },
+  { root: "里", title: "Bộ Lý", kanji: "理野重" },
+  { root: "工", title: "Bộ Công", kanji: "工空左試" },
+  { root: "匸", title: "Bộ Hệ", kanji: "医区" },
+  { root: "夂", title: "Bộ Truy", kanji: "夏冬" },
+  { root: "斤", title: "Bộ Cân", kanji: "新所" },
+  { root: "矢", title: "Bộ Thỉ", kanji: "知短" },
+  { root: "毋", title: "Thành phần Vô", kanji: "母毎海" },
+  { root: "父", title: "Nhóm gia đình", kanji: "父母兄姉妹弟" },
+  { root: "色", title: "Nhóm màu sắc", kanji: "色白黒赤青" },
+  { root: "季", title: "Nhóm thời gian / mùa", kanji: "年春夏秋冬朝昼夜夕" },
+  { root: "身", title: "Nhóm cơ thể", kanji: "足首肉目耳口手" },
+  { root: "冂", title: "Bộ Quynh", kanji: "円同" },
+  { root: "尺", title: "Nhóm kích thước / số lượng", kanji: "長短高低大小多少" },
+  { root: "気", title: "Nhóm thời tiết", kanji: "気風雨雪電" },
+  { root: "時", title: "Nhóm thời điểm", kanji: "時午半朝昼夜" },
+  { root: "友", title: "Nhóm quan hệ", kanji: "友親父母兄姉妹弟" },
+  { root: "事", title: "Nhóm công việc / sản xuất", kanji: "事業仕事働料工産用" },
+  { root: "発", title: "Nhóm hành động", kanji: "発出入行動起止" },
+  { root: "生", title: "Nhóm sinh tử", kanji: "生死" },
+  { root: "学", title: "Nhóm học tập / nghiên cứu", kanji: "学教習考研究写" },
+  { root: "建", title: "Nhóm nhà cửa / công trình", kanji: "建屋家店室館" },
+  { root: "民", title: "Nhóm xã hội", kanji: "民国会社員世区" },
+  { root: "川", title: "Nhóm sông nước", kanji: "川水海池洋" },
+  { root: "不", title: "Nhóm phủ định", kanji: "不無未" },
 ];
 
 function withShortcut(label, shortcut) {
@@ -468,7 +521,17 @@ function getTreeGroups(cards) {
 
   const groups = KANJI_TREE_GROUPS.map((group) => {
     const seenInGroup = new Set();
-    const groupCards = [...group.kanji]
+    const isTopicGroup = group.title.startsWith("Nhóm ");
+    const groupComponents = [...(group.components ?? group.root)];
+    const matchingKanji = isTopicGroup
+      ? [...group.kanji]
+      : [
+          ...cards
+            .filter((card) => groupComponents.some((component) => kanjiComponents[card.kanji]?.includes(component)))
+            .map((card) => card.kanji),
+          ...(group.include ? [...group.include] : []),
+        ];
+    const groupCards = matchingKanji
       .map((kanji) => cardByKanji.get(kanji))
       .filter(Boolean)
       .filter((card) => {
@@ -489,31 +552,83 @@ function getTreeGroups(cards) {
   return groups;
 }
 
-function KanjiTree({ cards }) {
+function KanjiTree({ cards, onStudyGroup }) {
   const groups = getTreeGroups(cards);
+  const [groupViews, setGroupViews] = useState({});
+
+  const setGroupView = (groupTitle, view) => {
+    setGroupViews((currentGroups) => ({
+      ...currentGroups,
+      [groupTitle]: view,
+    }));
+  };
 
   return (
     <section className="tree-page" aria-label="Cây Kanji">
       <header className="tree-header">
         <h1>Cây Kanji</h1>
         <span>{cards.length} chữ N5 + N4 theo phần viết giống nhau</span>
+        <a href="https://kanjivg.tagaini.net/" target="_blank" rel="noreferrer">
+          Dữ liệu cấu tạo: KanjiVG
+        </a>
       </header>
       <div className="tree-root">Cấu tạo chữ</div>
       <div className="tree-branches">
         {groups.map((group) => (
           <section className="tree-branch" key={group.title}>
             <div className="tree-branch-head">
-              <strong>{group.root}</strong>
-              <h2>{group.title}</h2>
+              <div className="tree-branch-title">
+                <strong>{group.root}</strong>
+                <h2>{group.title}</h2>
+              </div>
+              <div className="tree-branch-actions">
+                <button
+                  className="tree-study-button"
+                  type="button"
+                  aria-label={`Học nhóm ${group.title}`}
+                  onClick={() => onStudyGroup(group)}
+                >
+                  <Play aria-hidden="true" fill="currentColor" />
+                  Học nhóm
+                </button>
+                <div className="tree-view-toggle" role="group" aria-label={`Chế độ hiển thị nhóm ${group.title}`}>
+                  {[
+                    ["kanji", "Kanji"],
+                    ["details", "Nghĩa"],
+                    ["all", "Tất cả"],
+                  ].map(([view, label]) => (
+                    <button
+                      className={(groupViews[group.title] ?? "kanji") === view ? "tree-view-option-active" : ""}
+                      type="button"
+                      key={view}
+                      aria-pressed={(groupViews[group.title] ?? "kanji") === view}
+                      onClick={() => setGroupView(group.title, view)}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
             <div className="tree-kanji-list">
-              {group.cards.slice(0, 16).map((card) => (
-                <span className="tree-kanji-chip" key={card.kanji} title={`${card.hanViet} - ${card.meaning}`}>
-                  <strong>{card.kanji}</strong>
-                  <span>{card.hanViet}</span>
-                  <small>{card.meaning}</small>
-                </span>
-              ))}
+              {group.cards.map((card) => {
+                const view = groupViews[group.title] ?? "kanji";
+                return (
+                  <span
+                    className={`tree-kanji-chip ${view === "details" ? "tree-kanji-chip-details" : ""}`}
+                    key={card.kanji}
+                    title={`${card.hanViet} - ${card.meaning}`}
+                  >
+                    {view !== "details" ? <strong>{card.kanji}</strong> : null}
+                    {view !== "kanji" ? (
+                      <>
+                        <span>{card.hanViet}</span>
+                        <small>{card.meaning}</small>
+                      </>
+                    ) : null}
+                  </span>
+                );
+              })}
             </div>
           </section>
         ))}
@@ -524,6 +639,7 @@ function KanjiTree({ cards }) {
 
 export default function App() {
   const [activeList, setActiveList] = useState(() => getListFromPath());
+  const [treeStudyGroup, setTreeStudyGroup] = useState(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAnswerVisible, setIsAnswerVisible] = useState(false);
   const [isWritingMode, setIsWritingMode] = useState(false);
@@ -536,8 +652,13 @@ export default function App() {
 
   const favoriteSet = new Set(favoriteIds);
   const learnedSet = new Set(learnedIds);
-  const isTreePage = activeList === "tree";
-  const sourceCards = isTreePage ? [] : activeList === "all" ? allCards : decks[activeList] ?? allCards;
+  const isTreeList = activeList === "tree";
+  const isTreePage = isTreeList && !treeStudyGroup;
+  const sourceCards = isTreeList
+    ? treeStudyGroup?.cards ?? []
+    : activeList === "all"
+      ? allCards
+      : decks[activeList] ?? allCards;
   const visibleCards = sourceCards.filter((card) => {
     if (activeList === "learned") return learnedSet.has(card.kanji);
     if (learnedSet.has(card.kanji)) return false;
@@ -566,6 +687,7 @@ export default function App() {
   useEffect(() => {
     const handlePopState = () => {
       setActiveList(getListFromPath());
+      setTreeStudyGroup(null);
       setCurrentIndex(0);
       setIsAnswerVisible(false);
     };
@@ -686,8 +808,23 @@ export default function App() {
       window.history.pushState(null, "", nextPath);
     }
     setActiveList(value);
+    setTreeStudyGroup(null);
     setCurrentIndex(0);
     setIsAnswerVisible(false);
+  };
+
+  const startTreeGroupStudy = (group) => {
+    setTreeStudyGroup(group);
+    setCurrentIndex(0);
+    setIsAnswerVisible(false);
+    setIsStrokePanelVisible(false);
+  };
+
+  const returnToTree = () => {
+    setTreeStudyGroup(null);
+    setCurrentIndex(0);
+    setIsAnswerVisible(false);
+    setIsStrokePanelVisible(false);
   };
 
   const toggleFavorite = () => {
@@ -782,8 +919,23 @@ export default function App() {
           </nav>
         </div>
 
+        {treeStudyGroup ? (
+          <header className="tree-study-header">
+            <button type="button" onClick={returnToTree}>
+              <ChevronLeft aria-hidden="true" />
+              Cây Kanji
+            </button>
+            <div>
+              <strong>{treeStudyGroup.root}</strong>
+              <span>
+                {treeStudyGroup.title} · {visibleCards.length}/{treeStudyGroup.cards.length} chữ
+              </span>
+            </div>
+          </header>
+        ) : null}
+
         {isTreePage ? (
-          <KanjiTree cards={allCards} />
+          <KanjiTree cards={allCards} onStudyGroup={startTreeGroupStudy} />
         ) : card ? (
           <button
             className="flashcard"
@@ -794,6 +946,9 @@ export default function App() {
             aria-pressed={isAnswerVisible}
             onClick={toggleAnswer}
           >
+            <span className="flashcard-progress" aria-label={`Thẻ ${currentIndex + 1} trên ${visibleCards.length}`}>
+              {currentIndex + 1} / {visibleCards.length}
+            </span>
             <div className={`kanji-slot ${isStrokePanelVisible ? "kanji-slot-stroke" : ""}`}>
               <div className={`kanji ${isWritingMode && !isAnswerVisible ? "kanji-hidden" : ""}`} aria-hidden={isWritingMode && !isAnswerVisible}>
               {isStrokePanelVisible ? (

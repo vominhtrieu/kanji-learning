@@ -116,6 +116,7 @@ body {
 }
 
 .flashcard {
+  position: relative;
   width: min(100%, 560px);
   height: min(68vh, 580px);
   min-height: 420px;
@@ -136,6 +137,20 @@ body {
   transition:
     box-shadow 160ms ease,
     transform 160ms ease;
+}
+
+.flashcard-progress {
+  position: absolute;
+  top: 18px;
+  right: 20px;
+  padding: 5px 9px;
+  border: 1px solid rgba(32, 36, 39, 0.1);
+  border-radius: 999px;
+  background: rgba(255, 252, 246, 0.72);
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+  line-height: 1;
 }
 
 .flashcard::before {
@@ -282,6 +297,13 @@ body {
   font-weight: 700;
 }
 
+.tree-header a {
+  color: var(--teal);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-underline-offset: 3px;
+}
+
 .tree-root {
   width: fit-content;
   margin: 0 auto;
@@ -311,10 +333,18 @@ body {
   margin: 0 0 12px;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 10px;
 }
 
-.tree-branch-head > strong {
+.tree-branch-title {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tree-branch-title > strong {
   width: 42px;
   height: 42px;
   display: grid;
@@ -342,6 +372,105 @@ body {
   line-height: 1.25;
 }
 
+.tree-view-toggle {
+  flex: 0 0 auto;
+  padding: 3px;
+  display: grid;
+  grid-template-columns: repeat(3, auto);
+  border: 1px solid rgba(32, 36, 39, 0.14);
+  border-radius: 999px;
+  background: rgba(239, 225, 204, 0.72);
+}
+
+.tree-branch-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tree-study-button {
+  min-height: 34px;
+  padding: 0 11px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid rgba(185, 65, 49, 0.28);
+  border-radius: 999px;
+  background: rgba(255, 245, 239, 0.94);
+  color: var(--seal);
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 800;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.tree-study-button svg {
+  width: 13px;
+  height: 13px;
+}
+
+.tree-study-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+}
+
+.tree-study-header > button {
+  min-height: 40px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid rgba(32, 36, 39, 0.16);
+  border-radius: 999px;
+  background: rgba(255, 252, 246, 0.9);
+  color: var(--teal);
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.tree-study-header > button svg {
+  width: 18px;
+  height: 18px;
+}
+
+.tree-study-header > div {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.tree-study-header strong {
+  color: var(--seal);
+  font-family: "Yu Mincho", "Hiragino Mincho ProN", "YuMincho", serif;
+  font-size: 1.8rem;
+}
+
+.tree-view-toggle button {
+  padding: 6px 9px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.7rem;
+  font-weight: 750;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.tree-view-toggle .tree-view-option-active {
+  background: rgba(255, 252, 246, 0.98);
+  color: var(--teal);
+  box-shadow: 0 2px 7px rgba(32, 36, 39, 0.12);
+}
+
 .tree-kanji-list {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -360,6 +489,11 @@ body {
   border-radius: 8px;
   background: rgba(255, 252, 246, 0.78);
   text-align: center;
+}
+
+.tree-kanji-chip-details {
+  grid-template-rows: auto 1fr;
+  align-content: center;
 }
 
 .tree-kanji-chip strong {
@@ -552,6 +686,35 @@ button:focus-visible {
 
   .tree-kanji-chip small {
     font-size: 0.64rem;
+  }
+
+  .tree-branch-head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .tree-branch-actions {
+    width: 100%;
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .tree-study-button {
+    justify-content: center;
+  }
+
+  .tree-view-toggle {
+    width: 100%;
+  }
+
+  .tree-study-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .tree-study-header > button,
+  .tree-study-header > div {
+    justify-content: center;
   }
 
   .flashcard {
